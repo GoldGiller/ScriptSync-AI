@@ -1,0 +1,38 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+POST http://127.0.0.1:8000/api/script/generate
+Content-Type: application/json
+
+{
+  "title": "测试小说",
+  "source_text": "林夏在雨夜收到一封匿名来信。她循着信上的地址来到旧戏院，发现舞台中央摆着一台仍在运转的录音机。录音里传来失踪多年的姐姐声音，要求她在天亮前找出当年的真相。",
+  "genre": "悬疑",
+  "target_scene_count": 3,
+  "use_ai": false
+}
+
+###
+
+POST http://127.0.0.1:8000/api/yaml/validate
+Content-Type: application/json
+
+{
+  "yaml_text": "version: '1.0'\ntitle: 测试剧本\ngenre: 悬疑\npremise: 简介\ncharacters:\n  - name: 林夏\n    role: 主角\n    summary: 调查真相\nscenes:\n  - scene_id: S01\n    title: 雨夜来信\n    location: 旧城区\n    time: 夜\n    summary: 林夏收到匿名来信\n    dialogues:\n      - speaker: 林夏\n        content: 这到底是谁寄来的？\n        emotion: 紧张\n"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/ai/doc/generate
+Content-Type: application/json
+
+{
+  "title": "测试剧本分析",
+  "script_text": "第一场：林夏在雨夜收到匿名来信，决定前往旧戏院寻找线索。",
+  "doc_type": "人物小传",
+  "extra_requirements": "突出悬疑氛围"
+}
