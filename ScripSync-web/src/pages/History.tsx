@@ -119,11 +119,11 @@ function History() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center animate-fade-in">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <HistoryIcon className="h-10 w-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <HistoryIcon className="h-10 w-10 text-slate-300 dark:text-slate-500" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">暂无历史记录</h2>
-          <p className="text-slate-500 mb-8">开始转换您的第一部小说，转换记录将自动保存在这里。</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">暂无历史记录</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-8">开始转换您的第一部小说，转换记录将自动保存在这里。</p>
           <button onClick={() => navigate('/convert')} className="btn-primary">
             <Wand2 className="h-5 w-5" />开始转换
           </button>
@@ -135,7 +135,7 @@ function History() {
   // ── Detail view ──
   if (selectedItem) {
     return (
-      <div className="min-h-screen bg-slate-50 animate-fade-in">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 animate-fade-in transition-colors">
         <div className="max-w-[1600px] mx-auto px-4 py-6">
           {/* Top bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -143,16 +143,16 @@ function History() {
               <button onClick={() => setSelectedItem(null)} className="btn-ghost text-sm">
                 <ChevronRight className="h-4 w-4 rotate-180" />返回列表
               </button>
-              <h1 className="text-xl font-bold text-slate-900 truncate">{selectedItem.title}</h1>
-              <span className="text-xs text-slate-400 flex items-center gap-1">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate">{selectedItem.title}</h1>
+              <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                 <Calendar className="h-3 w-3" />{selectedItem.created_at}
               </span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={handleValidate} disabled={isValidating} className="btn-ghost text-sm text-indigo-600 hover:bg-indigo-50">
+              <button onClick={handleValidate} disabled={isValidating} className="btn-ghost text-sm text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-500/10">
                 {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}校验
               </button>
-              <button onClick={handleFormat} disabled={isFormatting} className="btn-ghost text-sm text-emerald-600 hover:bg-emerald-50">
+              <button onClick={handleFormat} disabled={isFormatting} className="btn-ghost text-sm text-emerald-600 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10">
                 {isFormatting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}格式化
               </button>
               <button onClick={handleDownload} className="btn-primary text-sm py-2">
@@ -165,7 +165,7 @@ function History() {
           {(errorMessage || message) && (
             <div className="mb-4 space-y-2">
               {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm flex items-start gap-3">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm flex items-start gap-3 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium">{errorMessage}</p>
@@ -174,7 +174,7 @@ function History() {
                 </div>
               )}
               {message && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 text-sm flex items-center gap-2">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 text-sm flex items-center gap-2 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <CheckCircle2 className="h-4 w-4 flex-shrink-0" />{message}
                   {isAutoValidating && <Loader2 className="h-4 w-4 animate-spin ml-auto" />}
                 </div>
@@ -185,19 +185,19 @@ function History() {
           {/* Editor + Preview */}
           <div className="grid lg:grid-cols-2 gap-4 h-[calc(100vh-240px)]">
             <div className="card flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-                <h2 className="text-sm font-semibold text-slate-900">YAML 编辑器</h2>
+              <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/50">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">YAML 编辑器</h2>
               </div>
               <div className="flex-1 p-3">
                 <MonacoEditor value={editedYAML} onChange={(val: string | undefined) => setEditedYAML(val || '')} height="100%" />
               </div>
             </div>
             <div className="card flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-                <h2 className="text-sm font-semibold text-slate-900">剧本预览</h2>
+              <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/50">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">剧本预览</h2>
               </div>
               <div className="flex-1 p-3">
-                <div className="h-full overflow-hidden rounded-xl border border-slate-200">
+                <div className="h-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                   <ScriptPreview script={previewScript} />
                 </div>
               </div>
@@ -214,11 +214,11 @@ function History() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-1">历史记录</h1>
-          <p className="text-slate-500">{history.length} 条转换记录</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-1">历史记录</h1>
+          <p className="text-slate-500 dark:text-slate-400">{history.length} 条转换记录</p>
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -237,24 +237,24 @@ function History() {
             onClick={() => handleSelectItem(item)}
           >
             <div className="flex items-start justify-between mb-3">
-              <h3 className="font-semibold text-slate-900 line-clamp-1 group-hover:text-amber-600 transition-colors">{item.title}</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{item.title}</h3>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
+            <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500 mb-3">
               <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{item.created_at}</span>
             </div>
-            <p className="text-sm text-slate-600 line-clamp-2 mb-4 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 leading-relaxed">
               {item.original_text.slice(0, 120)}{item.original_text.length > 120 ? '...' : ''}
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); handleSelectItem(item); }}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium transition-colors dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 dark:text-indigo-300"
               >
                 <Eye className="h-3.5 w-3.5" />查看
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-300"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -265,9 +265,9 @@ function History() {
 
       {filteredHistory.length === 0 && searchQuery && (
         <div className="text-center py-16">
-          <Search className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">没有找到匹配 "{searchQuery}" 的记录</p>
-          <button onClick={() => setSearchQuery('')} className="mt-4 text-amber-600 hover:text-amber-700 font-medium text-sm">清除搜索</button>
+          <Search className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-500 dark:text-slate-400">没有找到匹配 "{searchQuery}" 的记录</p>
+          <button onClick={() => setSearchQuery('')} className="mt-4 text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-medium text-sm">清除搜索</button>
         </div>
       )}
     </div>

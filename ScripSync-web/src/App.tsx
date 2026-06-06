@@ -16,10 +16,10 @@ function ScrollToTop() {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white/50 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+    <footer className="border-t border-slate-200 bg-white/50 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/70">
+      <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-700">ScriptSync AI</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-200">ScriptSync AI</span>
           <span>· 智能剧本转换工具</span>
         </div>
         <div className="flex items-center gap-6">
@@ -34,7 +34,7 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col dark:bg-slate-950 dark:text-slate-100 transition-colors">
         <Navbar />
         <main className="flex-1">
           <Routes>

@@ -81,3 +81,14 @@ export interface HistoryItem {
   created_at: string;
   script: ScriptDocument | null;
 }
+
+export type NotificationType = 'system' | 'conversion' | 'validation';
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  read: boolean;
+  type: NotificationType;
+}
