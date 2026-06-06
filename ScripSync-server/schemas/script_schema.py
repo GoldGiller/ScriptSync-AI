@@ -35,17 +35,24 @@ class ScriptDocument(BaseModel):
     scenes: list[SceneBlock] = Field(default_factory=list)
 
 
+class ProcessStep(BaseModel):
+    key: str = Field(..., description="步骤标识")
+    label: str = Field(..., description="步骤名称")
+    status: str = Field(..., description="步骤状态")
+    detail: str = Field(default="", description="步骤说明")
+
+
 class ScriptGenerateRequest(BaseModel):
     title: str = Field(..., description="作品标题")
     source_text: str = Field(..., min_length=20, description="小说原文或摘要")
     genre: str = Field(default="", description="题材")
     target_scene_count: int = Field(default=3, ge=1, le=20, description="目标场景数量")
-    use_ai: bool = Field(default=False, description="是否优先使用 AI 生成")
 
 
 class ScriptGenerateData(BaseModel):
     script: ScriptDocument
     yaml_text: str
+    process_steps: list[ProcessStep] = Field(default_factory=list)
 
 
 class ScriptGenerateResponse(BaseResponse):

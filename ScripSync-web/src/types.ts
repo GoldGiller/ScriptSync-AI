@@ -28,6 +28,13 @@ export interface ScriptDocument {
   scenes: SceneBlock[];
 }
 
+export interface ProcessStep {
+  key: string;
+  label: string;
+  status: 'pending' | 'active' | 'completed' | 'failed';
+  detail: string;
+}
+
 export interface ScriptGenerateRequest {
   title: string;
   source_text: string;
@@ -46,6 +53,7 @@ export interface ScriptRefineRequest {
 export interface ScriptGenerateResponseData {
   script: ScriptDocument;
   yaml_text: string;
+  process_steps: ProcessStep[];
 }
 
 export interface ImportDocumentResponseData {

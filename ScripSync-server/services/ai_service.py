@@ -1,5 +1,5 @@
 from core.ai_client import create_chat_completion
-from core.exception_handler import ConfigurationException
+from core.exception_handler import ConfigurationException, IntegrationException
 from schemas.ai_schema import AiDocData, AiDocGenerateRequest, AiDocGenerateResponse
 
 
@@ -18,7 +18,7 @@ class AiService:
                 ],
                 temperature=0.3,
             )
-        except ConfigurationException:
+        except (ConfigurationException, IntegrationException):
             content = self._build_fallback_doc(payload)
 
         return AiDocGenerateResponse(
@@ -39,6 +39,9 @@ class AiService:
         )
 
     def _build_fallback_doc(self, payload: AiDocGenerateRequest) -> str:
+        if payload.doc_type == "yaml-script":
+            return ""
+
         return (
             f"# {payload.title}\n\n"
             f"## 文档类型\n{payload.doc_type}\n\n"
