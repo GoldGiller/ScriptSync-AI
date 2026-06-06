@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Download, Sparkles, Loader2, AlertCircle, Wand2, CheckCircle2, Upload,
   BrainCircuit, FilePenLine, PanelLeftClose, PanelLeft, Search, Maximize2,
@@ -630,8 +630,6 @@ function Convert() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 p-3 min-h-0">
-              <MonacoEditor value={outputYAML} onChange={(val: string | undefined) => setOutputYAML(val || '')} height="100%" />
             <div className="flex-1 min-h-0 p-3">
               <MonacoEditor value={outputYAML} onChange={handleYamlChange} height="720px" />
             </div>
@@ -655,8 +653,6 @@ function Convert() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 p-3 min-h-0 overflow-hidden">
-              <div className="h-full overflow-y-auto rounded-xl border border-slate-200">
             <div className="flex-1 min-h-0 p-3">
               <div className="h-full overflow-hidden rounded-xl border border-slate-200">
                 <ScriptPreview script={previewScript} />
