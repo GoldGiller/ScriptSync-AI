@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ScriptDocument } from '../types';
 
 interface ScriptPreviewProps {
@@ -105,4 +106,4 @@ function ScriptPreview({ script }: ScriptPreviewProps) {
   );
 }
 
-export default ScriptPreview;
+export default memo(ScriptPreview);

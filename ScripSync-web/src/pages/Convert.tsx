@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Download, Sparkles, Loader2, AlertCircle, Wand2, CheckCircle2, Upload,
   BrainCircuit, FilePenLine, PanelLeftClose, PanelLeft, Search, Maximize2,
@@ -55,6 +55,7 @@ function Convert() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPreviewStale, setIsPreviewStale] = useState(false);
   const validationRequestIdRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -75,20 +76,21 @@ function Convert() {
     setErrorDetails([]);
   }
 
-  async function runValidation(yamlText: string, mode: 'manual' | 'auto' = 'manual') {
+  const runValidation = useCallback(async (yamlText: string, mode: 'manual' | 'auto' = 'manual') => {
     if (!yamlText.trim()) {
       setValidationMessage('当前没有可校验的 YAML 内容');
       return;
     }
     const requestId = ++validationRequestIdRef.current;
     if (mode === 'manual') setIsValidating(true);
-    else { setIsAutoValidating(true); setValidationMessage('正在自动校验 YAML...'); }
+    else setIsAutoValidating(true);
     setErrorMessage('');
     setErrorDetails([]);
     try {
       const result = await validateYaml(yamlText);
       if (requestId !== validationRequestIdRef.current) return;
       setPreviewScript(result.normalized);
+      setIsPreviewStale(false);
       setValidationMessage(result.valid ? 'YAML 校验通过，预览已同步后端结构' : 'YAML 校验未通过');
     } catch (error) {
       if (requestId !== validationRequestIdRef.current) return;
@@ -100,14 +102,13 @@ function Convert() {
         else setIsAutoValidating(false);
       }
     }
-  }
+  }, []);
 
-  useEffect(() => {
-    if (!showResult || !outputYAML.trim() || isFormatting || isConverting || isRefining) return;
-    const currentYaml = outputYAML;
-    const timer = window.setTimeout(() => { void runValidation(currentYaml, 'auto'); }, 700);
-    return () => { window.clearTimeout(timer); };
-  }, [outputYAML, showResult, isFormatting, isConverting, isRefining]);
+  function handleYamlChange(value: string | undefined) {
+    setOutputYAML(value || '');
+    setIsPreviewStale(true);
+    setValidationMessage('YAML 已修改，预览待同步，请点击“校验”更新右侧内容');
+  }
 
   async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -160,6 +161,7 @@ function Convert() {
       const result = await generateScript({ title: derivedTitle, source_text: inputText, genre: genre.trim(), target_scene_count: targetSceneCount });
       setOutputYAML(result.yaml_text);
       setPreviewScript(result.script);
+      setIsPreviewStale(false);
       setProcessSteps(result.process_steps);
       setShowResult(true);
       setShowRefinePanel(true);
@@ -196,6 +198,7 @@ function Convert() {
       const result = await refineScript({ title: derivedTitle, source_text: inputText, genre: genre.trim(), current_yaml: outputYAML, refine_prompt: prompt });
       setOutputYAML(result.yaml_text);
       setPreviewScript(result.script);
+      setIsPreviewStale(false);
       setProcessSteps(result.process_steps);
       setValidationMessage('AI 已根据微调要求更新剧本结果');
       setRefinePrompt('');
@@ -501,7 +504,7 @@ function Convert() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={() => { setShowResult(false); setOutputYAML(''); setPreviewScript(null); setProcessSteps([]); setErrorMessage(''); setErrorDetails([]); setValidationMessage(''); setImportWarnings([]); setRefinePrompt(''); setLeftPanelTab('reasoning'); setSidebarCollapsed(false); }} className="btn-ghost text-sm">
+              <button onClick={() => { setShowResult(false); setOutputYAML(''); setPreviewScript(null); setProcessSteps([]); setErrorMessage(''); setErrorDetails([]); setValidationMessage(''); setImportWarnings([]); setRefinePrompt(''); setLeftPanelTab('reasoning'); setSidebarCollapsed(false); setIsPreviewStale(false); }} className="btn-ghost text-sm">
                 <FilePenLine className="h-4 w-4" />重新转换
               </button>
               <button onClick={handleValidate} disabled={isValidating} className="btn-ghost text-sm text-indigo-600 hover:bg-indigo-50">
@@ -530,8 +533,12 @@ function Convert() {
               </div>
             )}
             {validationMessage && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 text-sm flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+              <div className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${
+                isPreviewStale
+                  ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                  : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+              }`}>
+                {isPreviewStale ? <AlertCircle className="h-4 w-4 flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 flex-shrink-0" />}
                 {validationMessage}
                 {(isAutoValidating || isRefining || isConverting) && <Loader2 className="h-4 w-4 animate-spin ml-auto" />}
               </div>
@@ -625,6 +632,8 @@ function Convert() {
             </div>
             <div className="flex-1 p-3 min-h-0">
               <MonacoEditor value={outputYAML} onChange={(val: string | undefined) => setOutputYAML(val || '')} height="100%" />
+            <div className="flex-1 min-h-0 p-3">
+              <MonacoEditor value={outputYAML} onChange={handleYamlChange} height="720px" />
             </div>
           </div>
 
@@ -636,6 +645,9 @@ function Convert() {
                   <BookOpen className="h-4 w-4 text-indigo-500" />
                   剧本预览
                 </h2>
+                {isPreviewStale && (
+                  <p className="mt-1 text-xs text-amber-600">当前预览未同步最新 YAML，请点击“校验”后更新。</p>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={handleFullscreen} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="全屏">
@@ -645,6 +657,8 @@ function Convert() {
             </div>
             <div className="flex-1 p-3 min-h-0 overflow-hidden">
               <div className="h-full overflow-y-auto rounded-xl border border-slate-200">
+            <div className="flex-1 min-h-0 p-3">
+              <div className="h-full overflow-hidden rounded-xl border border-slate-200">
                 <ScriptPreview script={previewScript} />
               </div>
             </div>
