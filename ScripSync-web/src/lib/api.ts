@@ -32,15 +32,7 @@ function buildUrl(path: string) {
   return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-export async function postJson<TResponse>(path: string, payload: unknown): Promise<TResponse> {
-  const response = await fetch(buildUrl(path), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-
+async function parseApiResponse<TResponse>(response: Response): Promise<TResponse> {
   let body: TResponse | ApiErrorPayload | null = null;
   try {
     body = await response.json();
@@ -61,4 +53,25 @@ export async function postJson<TResponse>(path: string, payload: unknown): Promi
   }
 
   return body as TResponse;
+}
+
+export async function postJson<TResponse>(path: string, payload: unknown): Promise<TResponse> {
+  const response = await fetch(buildUrl(path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseApiResponse<TResponse>(response);
+}
+
+export async function postFormData<TResponse>(path: string, payload: FormData): Promise<TResponse> {
+  const response = await fetch(buildUrl(path), {
+    method: 'POST',
+    body: payload,
+  });
+
+  return parseApiResponse<TResponse>(response);
 }

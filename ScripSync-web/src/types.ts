@@ -33,12 +33,27 @@ export interface ScriptGenerateRequest {
   source_text: string;
   genre: string;
   target_scene_count: number;
-  use_ai: boolean;
+}
+
+export interface ScriptRefineRequest {
+  title: string;
+  source_text: string;
+  genre: string;
+  current_yaml: string;
+  refine_prompt: string;
 }
 
 export interface ScriptGenerateResponseData {
   script: ScriptDocument;
   yaml_text: string;
+}
+
+export interface ImportDocumentResponseData {
+  file_name: string;
+  title: string;
+  genre: string;
+  source_text: string;
+  warnings: string[];
 }
 
 export interface YamlValidateResponseData {

@@ -13,7 +13,9 @@ ScriptSync-AI 是一个面向剧情创作与剧本结构化整理的 AI 辅助�
 ## 核心功能
 ### 1. 小说转结构化剧本
 - 输入作品标题、题材、目标场景数和原始小说文本。
+- 支持导入 Word / PDF 文档，并自动识别作品标题、题材和正文文本。
 - 支持规则生成，也支持启用 AI 辅助生成。
+- 转换结果后可继续进行三类微调：修改原始输入后重新生成、输入 AI 微调指令后重新生成、直接编辑 YAML。
 - 输出统一的剧本对象和 YAML 文本。
 
 ### 2. YAML 校验与格式化
@@ -85,7 +87,9 @@ ScriptSync-AI/
 - `/schema`：YAML Schema 文档页
 
 ### 后端接口
+- `POST /api/import/parse`：上传 `.docx` / `.pdf` 并自动识别标题、题材、正文
 - `POST /api/script/generate`：生成结构化剧本与 YAML
+- `POST /api/script/refine`：基于当前结果和 AI 指令微调剧本并返回新版 YAML
 - `POST /api/yaml/validate`：校验 YAML
 - `POST /api/yaml/format`：格式化 YAML
 - `POST /api/ai/doc/generate`：生成角色分析、剧情说明等 AI 文档
@@ -136,7 +140,7 @@ APP_ENV=development
 CORS_ORIGINS=*
 
 AI_BASE_URL=https://api.deepseek.com
-AI_API_KEY=your_api_key
+AI_API_KEY=sk-your-deepseek-api-key
 AI_MODEL=deepseek-chat
 AI_TIMEOUT=90
 
@@ -144,23 +148,29 @@ WORKSPACE_DIR=workspace
 ```
 
 说明：
-- 当 `AI_API_KEY` 为空时，AI 相关能力会回退到本地逻辑或非 AI 流程。
+- `/convert` 页面会默认先尝试 AI 生成剧本，不再提供用户侧 AI 开关。
+- 当 `AI_API_KEY` 为空、AI 服务不可用，或 AI 返回内容无法解析为合法 YAML 时，后端会自动回退到本地基础生成逻辑。
 - 默认兼容 OpenAI 风格的 Chat Completions 接口，当前默认配置为 DeepSeek。
 
 ## 测试与验证方式
 ### 基础验证
 1. 启动后端服务。
 2. 启动前端页面。
-3. 在 `/convert` 页面输入小说文本，执行生成。
-4. 对结果执行 YAML 校验、格式化和导出。
-5. 在 `/history` 页面查看历史结果是否可重新编辑和预览。
+3. 在 `/convert` 页面粘贴小说文本，或导入 `.docx` / `.pdf` 文档。
+4. 确认系统会自动识别并回填作品标题、题材、小说文本，必要时可手动修改。
+5. 执行生成，并在结果页继续验证：
+   - 修改标题 / 题材 / 小说文本 / 场景数后重新生成；
+   - 输入 AI 微调指令后重新生成；
+   - 对结果执行 YAML 校验、格式化和导出。
+6. 在 `/history` 页面查看历史结果是否可重新编辑和预览。
 
 ### 接口验证
 - 可使用 [test_main.http](/D:/agentyaml/ScriptSync-AI/ScripSync-server/test_main.http) 进行接口调试。
 - 也可通过 Swagger 页面直接测试接口。
 
 ### 建议重点验证
-- 不开启 AI 时，剧本是否可以正常生成。
+- 在已配置 `AI_API_KEY` 时，`/convert` 页面是否会直接走 AI 生成并返回结构化 YAML。
+- 在未配置 `AI_API_KEY`、AI 服务失败，或 AI 返回非法 YAML 时，后端是否会自动回退并仍然生成可用剧本。
 - YAML 非法时，接口是否正确返回错误信息。
 - 格式化后的 YAML 是否仍能通过校验。
 
@@ -265,4 +275,3 @@ WORKSPACE_DIR=workspace
 ```
 ## 结语
 感谢评委和队友的支持与配合！我们将持续完善项目功能和文档，为比赛提交提供更好的支持。如有任何问题或建议，欢迎随时联系我！
-
