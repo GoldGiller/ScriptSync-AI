@@ -1,8 +1,10 @@
-import { postJson } from './api';
+import { postFormData, postJson } from './api';
 import type {
+  ImportDocumentResponseData,
   ScriptDocument,
   ScriptGenerateRequest,
   ScriptGenerateResponseData,
+  ScriptRefineRequest,
   YamlFormatResponseData,
   YamlValidateResponseData,
 } from '../types';
@@ -15,6 +17,18 @@ interface ApiResponse<T> {
 
 export async function generateScript(payload: ScriptGenerateRequest): Promise<ScriptGenerateResponseData> {
   const response = await postJson<ApiResponse<ScriptGenerateResponseData>>('/api/script/generate', payload);
+  return response.data;
+}
+
+export async function refineScript(payload: ScriptRefineRequest): Promise<ScriptGenerateResponseData> {
+  const response = await postJson<ApiResponse<ScriptGenerateResponseData>>('/api/script/refine', payload);
+  return response.data;
+}
+
+export async function importDocument(file: File): Promise<ImportDocumentResponseData> {
+  const payload = new FormData();
+  payload.append('file', file);
+  const response = await postFormData<ApiResponse<ImportDocumentResponseData>>('/api/import/parse', payload);
   return response.data;
 }
 

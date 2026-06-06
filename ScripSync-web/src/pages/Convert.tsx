@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Download, Sparkles, Loader2, AlertCircle, Wand2, CheckCircle2 } from 'lucide-react';
+import { Download, Sparkles, Loader2, AlertCircle, Wand2, CheckCircle2, Upload } from 'lucide-react';
 import MonacoEditor from '../components/MonacoEditor';
 import ScriptPreview from '../components/ScriptPreview';
 import { useAppStore } from '../hooks/useAppStore';
-import { formatYaml, generateScript, validateYaml } from '../lib/scriptApi';
+import { formatYaml, generateScript, importDocument, refineScript, validateYaml } from '../lib/scriptApi';
 import type { ScriptDocument } from '../types';
 import { ApiError } from '../lib/api';
 import { formatApiErrorDetails } from '../lib/errorUtils';
@@ -13,19 +13,24 @@ function Convert() {
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState('');
   const [targetSceneCount, setTargetSceneCount] = useState(3);
-  const [useAi, setUseAi] = useState(false);
   const [inputText, setInputText] = useState('');
   const [outputYAML, setOutputYAML] = useState('');
   const [previewScript, setPreviewScript] = useState<ScriptDocument | null>(null);
   const [isConverting, setIsConverting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isAutoValidating, setIsAutoValidating] = useState(false);
   const [isFormatting, setIsFormatting] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showRefinePanel, setShowRefinePanel] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState<string[]>([]);
   const [validationMessage, setValidationMessage] = useState('');
+  const [importWarnings, setImportWarnings] = useState<string[]>([]);
+  const [refinePrompt, setRefinePrompt] = useState('');
   const validationRequestIdRef = useRef(0);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const derivedTitle = useMemo(() => {
     if (title.trim()) {
@@ -91,7 +96,7 @@ function Convert() {
   }
 
   useEffect(() => {
-    if (!showResult || !outputYAML.trim() || isFormatting || isConverting) {
+    if (!showResult || !outputYAML.trim() || isFormatting || isConverting || isRefining) {
       return;
     }
 
@@ -103,7 +108,34 @@ function Convert() {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [outputYAML, showResult, isFormatting, isConverting]);
+  }, [outputYAML, showResult, isFormatting, isConverting, isRefining]);
+
+  async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    setIsImporting(true);
+    setErrorMessage('');
+    setErrorDetails([]);
+    setImportWarnings([]);
+
+    try {
+      const result = await importDocument(file);
+      setTitle(result.title);
+      setGenre(result.genre);
+      setInputText(result.source_text);
+      setImportWarnings(result.warnings);
+      setValidationMessage(`已导入 ${result.file_name}，并自动识别标题、题材和正文`);
+    } catch (error) {
+      setApiErrorState(error, '文档导入失败，请稍后重试');
+    } finally {
+      setIsImporting(false);
+    }
+  }
 
   async function handleConvert() {
     if (!inputText.trim()) {
@@ -129,12 +161,12 @@ function Convert() {
         source_text: inputText,
         genre: genre.trim(),
         target_scene_count: targetSceneCount,
-        use_ai: useAi,
       });
 
       setOutputYAML(result.yaml_text);
       setPreviewScript(result.script);
       setShowResult(true);
+      setShowRefinePanel(true);
       setValidationMessage('已根据后端返回结果生成剧本');
 
       addHistory({
@@ -149,6 +181,53 @@ function Convert() {
       setApiErrorState(error, '调用后端生成剧本失败，请稍后重试');
     } finally {
       setIsConverting(false);
+    }
+  }
+
+  async function handleRefineWithAi() {
+    if (!outputYAML.trim()) {
+      setErrorMessage('当前没有可微调的 YAML 结果');
+      setErrorDetails([]);
+      return;
+    }
+
+    if (!refinePrompt.trim()) {
+      setErrorMessage('请输入 AI 微调要求');
+      setErrorDetails([]);
+      return;
+    }
+
+    setIsRefining(true);
+    setErrorMessage('');
+    setErrorDetails([]);
+    setValidationMessage('');
+
+    try {
+      const result = await refineScript({
+        title: derivedTitle,
+        source_text: inputText,
+        genre: genre.trim(),
+        current_yaml: outputYAML,
+        refine_prompt: refinePrompt.trim(),
+      });
+
+      setOutputYAML(result.yaml_text);
+      setPreviewScript(result.script);
+      setValidationMessage('AI 已根据微调要求更新剧本结果');
+      setRefinePrompt('');
+
+      addHistory({
+        id: Date.now().toString(),
+        title: derivedTitle,
+        original_text: inputText,
+        script_yaml: result.yaml_text,
+        created_at: new Date().toISOString().split('T')[0],
+        script: result.script,
+      });
+    } catch (error) {
+      setApiErrorState(error, 'AI 微调失败，请调整要求后重试');
+    } finally {
+      setIsRefining(false);
     }
   }
 
@@ -201,13 +280,40 @@ function Convert() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 space-y-5">
+            <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">导入 Word / PDF 文档</p>
+                  <p className="mt-1 text-xs text-slate-600">支持 .docx / .pdf，导入后会自动识别作品标题、题材和小说文本，你仍可继续手动修改。</p>
+                </div>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleImportFile}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isImporting}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-lg transition-colors"
+                  >
+                    {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {isImporting ? '导入中...' : '选择文档'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">作品标题</label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="可选，不填则自动截取正文前 20 个字"
+                  placeholder="可手动填写，或导入后自动识别；未识别时默认取正文前 20 个字"
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
@@ -216,13 +322,13 @@ function Convert() {
                 <input
                   value={genre}
                   onChange={(e) => setGenre(e.target.value)}
-                  placeholder="如：悬疑、都市、古风"
+                  placeholder="可自动识别，也可手动修改，如：悬疑、都市、古风"
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 items-end">
+            <div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">目标场景数</label>
                 <input
@@ -234,15 +340,7 @@ function Convert() {
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
-              <label className="inline-flex items-center gap-3 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={useAi}
-                  onChange={(e) => setUseAi(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500"
-                />
-                优先使用 AI 生成（后端需已配置 AI_API_KEY）
-              </label>
+              <p className="mt-2 text-xs text-slate-500">系统会默认先尝试 AI 生成；如果 AI 暂时不可用或返回结果无效，后端会自动回退到基础生成逻辑。</p>
             </div>
 
             <div>
@@ -250,12 +348,23 @@ function Convert() {
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="在此粘贴小说文本，至少 20 个字符..."
+                placeholder="可直接粘贴小说文本，也可通过 Word/PDF 导入，至少 20 个字符..."
                 className="w-full h-96 p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none font-mono text-sm"
               />
               <p className="mt-2 text-xs text-slate-500">当前长度：{inputText.trim().length} 字符</p>
             </div>
           </div>
+
+          {importWarnings.length > 0 && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+              <p className="font-medium">文档已导入，请检查以下识别提示：</p>
+              <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
+                {importWarnings.map((warning, index) => (
+                  <li key={`${warning}-${index}`}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {errorMessage && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
@@ -275,10 +384,19 @@ function Convert() {
             </div>
           )}
 
+          {validationMessage && (
+            <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+              <div className="flex items-center justify-between gap-3">
+                <span>{validationMessage}</span>
+                {isImporting && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-center">
             <button
               onClick={handleConvert}
-              disabled={isConverting}
+              disabled={isConverting || isImporting}
               className="inline-flex items-center gap-3 px-8 py-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-lg font-semibold rounded-xl shadow-lg transition-all"
             >
               {isConverting ? (
@@ -309,6 +427,12 @@ function Convert() {
           </div>
           <div className="flex flex-wrap gap-3">
             <button
+              onClick={() => setShowRefinePanel((prev) => !prev)}
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors"
+            >
+              {showRefinePanel ? '收起编辑微调' : '继续编辑微调'}
+            </button>
+            <button
               onClick={() => {
                 setShowResult(false);
                 setOutputYAML('');
@@ -316,6 +440,8 @@ function Convert() {
                 setErrorMessage('');
                 setErrorDetails([]);
                 setValidationMessage('');
+                setImportWarnings([]);
+                setRefinePrompt('');
               }}
               className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors"
             >
@@ -347,6 +473,86 @@ function Convert() {
           </div>
         </div>
 
+        {showRefinePanel && (
+          <div className="mb-6 grid gap-6 xl:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">基于原始输入继续微调</h2>
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">作品标题</label>
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">题材</label>
+                    <input
+                      value={genre}
+                      onChange={(e) => setGenre(e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">目标场景数</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={targetSceneCount}
+                    onChange={(e) => setTargetSceneCount(Number(e.target.value) || 1)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">小说文本</label>
+                  <textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    className="w-full h-48 p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none font-mono text-sm"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleConvert}
+                    disabled={isConverting || isRefining}
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    {isConverting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    重新生成剧本
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">AI 指令微调</h2>
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">输入自然语言要求，让 AI 基于当前结果继续优化，例如：增加悬疑氛围、强化人物冲突、让对白更口语化。</p>
+                <textarea
+                  value={refinePrompt}
+                  onChange={(e) => setRefinePrompt(e.target.value)}
+                  placeholder="例如：保留当前剧情走向，但增加主角与反派的对白冲突，并让整体氛围更悬疑。"
+                  className="w-full h-56 p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm"
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleRefineWithAi}
+                    disabled={isRefining || isConverting}
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                    AI 微调结果
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {errorMessage && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
             <div className="flex items-start gap-3">
@@ -369,7 +575,7 @@ function Convert() {
           <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
             <div className="flex items-center justify-between gap-3">
               <span>{validationMessage}</span>
-              {isAutoValidating && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
+              {(isAutoValidating || isRefining) && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
             </div>
           </div>
         )}
