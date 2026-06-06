@@ -5,6 +5,18 @@ Accept: application/json
 
 ###
 
+POST http://127.0.0.1:8000/api/import/parse
+Content-Type: multipart/form-data; boundary=----ClaudeBoundary
+
+------ClaudeBoundary
+Content-Disposition: form-data; name="file"; filename="sample.docx"
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+< ./fixtures/sample.docx
+------ClaudeBoundary--
+
+###
+
 POST http://127.0.0.1:8000/api/script/generate
 Content-Type: application/json
 
@@ -12,8 +24,7 @@ Content-Type: application/json
   "title": "测试小说",
   "source_text": "林夏在雨夜收到一封匿名来信。她循着信上的地址来到旧戏院，发现舞台中央摆着一台仍在运转的录音机。录音里传来失踪多年的姐姐声音，要求她在天亮前找出当年的真相。",
   "genre": "悬疑",
-  "target_scene_count": 3,
-  "use_ai": false
+  "target_scene_count": 3
 }
 
 ###

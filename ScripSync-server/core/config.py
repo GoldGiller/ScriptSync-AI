@@ -19,7 +19,7 @@ class Settings(BaseModel):
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
     ai_base_url: str = "https://api.deepseek.com"
     ai_api_key: str = ""
-    ai_model: str = "deepseek-chat"
+    ai_model: str = "deepseek-v4-pro"
     ai_timeout: float = 90.0
     workspace_dir: Path = Field(default_factory=lambda: Path("workspace").resolve())
 
@@ -42,7 +42,7 @@ def get_settings() -> Settings:
         cors_origins=_parse_cors_origins(os.getenv("CORS_ORIGINS")),
         ai_base_url=os.getenv("AI_BASE_URL", "https://api.deepseek.com"),
         ai_api_key=os.getenv("AI_API_KEY", ""),
-        ai_model=os.getenv("AI_MODEL", "deepseek-chat"),
+        ai_model=os.getenv("AI_MODEL", "deepseek-v4-pro"),
         ai_timeout=float(os.getenv("AI_TIMEOUT", "90")),
         workspace_dir=Path(os.getenv("WORKSPACE_DIR", "workspace")).resolve(),
     )
