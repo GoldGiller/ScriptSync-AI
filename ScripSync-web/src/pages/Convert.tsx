@@ -54,9 +54,11 @@ function Convert() {
   const [refinePrompt, setRefinePrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPreviewStale, setIsPreviewStale] = useState(false);
   const validationRequestIdRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const derivedTitle = useMemo(() => {
     if (title.trim()) return title.trim();
@@ -235,6 +237,26 @@ function Convert() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  function handleFullscreen() {
+    if (!isFullscreen) {
+      setIsFullscreen(true);
+    } else {
+      setIsFullscreen(false);
+    }
+  }
+
+  // 监听 ESC 键退出全屏
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
 
   // ═══════════════════ INPUT STATE ═══════════════════
   if (!showResult) {
@@ -461,9 +483,9 @@ function Convert() {
   return (
     <>
       <AiThinkingOverlay title={processTitle} subtitle={processSubtitle} steps={processSteps} visible={isThinkingOverlayVisible} />
-      <div className="min-h-screen bg-slate-50 animate-fade-in">
+      <div className="h-screen bg-slate-50 animate-fade-in flex flex-col">
         {/* Compact header toolbar */}
-        <div className="glass border-b border-slate-200/60 sticky top-14 z-30">
+        <div className="glass border-b border-slate-200/60 flex-shrink-0">
           <div className="max-w-[1600px] mx-auto px-4 py-2.5 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
               <button
@@ -500,7 +522,7 @@ function Convert() {
 
         {/* Messages */}
         {(errorMessage || validationMessage) && (
-          <div className="max-w-[1600px] mx-auto px-4 pt-3 space-y-2">
+          <div className="max-w-[1600px] mx-auto px-4 pt-3 pb-1 space-y-2 flex-shrink-0">
             {errorMessage && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm flex items-start gap-3">
                 <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -525,79 +547,77 @@ function Convert() {
         )}
 
         {/* Main workspace */}
-        <div className={`max-w-[1600px] mx-auto px-4 py-4 grid gap-4 items-start transition-all duration-300 ${
+        <div className={`max-w-[1600px] mx-auto px-4 py-4 grid gap-4 transition-all duration-300 flex-1 min-h-0 ${
           sidebarCollapsed
             ? 'xl:grid-cols-[minmax(420px,1fr)_minmax(380px,1fr)]'
             : 'xl:grid-cols-[360px_minmax(420px,1fr)_minmax(380px,1fr)]'
         }`}>
           {/* Sidebar - collapsible */}
           {!sidebarCollapsed && (
-            <div className="space-y-4 animate-slide-in-left">
+            <div className="card flex flex-col overflow-hidden animate-slide-in-left">
               {/* Tabs */}
-              <div className="card overflow-hidden">
-                <div className="flex bg-slate-50 p-1.5 gap-1 rounded-t-2xl">
-                  {tabConfig.map((tab) => {
-                    const Icon = tab.icon;
-                    const active = leftPanelTab === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        onClick={() => setLeftPanelTab(tab.key)}
-                        className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-medium transition-all ${
-                          active ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        <span className="hidden xl:inline">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="p-3">
-                  {leftPanelTab === 'reasoning' && (
-                    <AiReasoningPanel title={processTitle} subtitle={processSubtitle} steps={processSteps} isRunning={isConverting || isRefining} />
-                  )}
-                  {leftPanelTab === 'input' && showRefinePanel && (
+              <div className="flex bg-slate-50 p-1.5 gap-1 border-b border-slate-200">
+                {tabConfig.map((tab) => {
+                  const Icon = tab.icon;
+                  const active = leftPanelTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setLeftPanelTab(tab.key)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-medium transition-all ${
+                        active ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="hidden xl:inline">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex-1 overflow-y-auto p-3">
+                {leftPanelTab === 'reasoning' && (
+                  <AiReasoningPanel title={processTitle} subtitle={processSubtitle} steps={processSteps} isRunning={isConverting || isRefining} />
+                )}
+                {leftPanelTab === 'input' && showRefinePanel && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-slate-700">修改输入参数</div>
                     <div className="space-y-3">
-                      <div className="text-sm font-medium text-slate-700">修改输入参数</div>
-                      <div className="space-y-3">
-                        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="标题" className="input-field py-2 text-sm" />
-                        <select value={genre} onChange={(e) => setGenre(e.target.value)} className="input-field py-2 text-sm">
-                          {GENRE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt || '自动识别题材'}</option>)}
-                        </select>
-                        <input type="number" min={1} max={20} value={targetSceneCount} onChange={(e) => setTargetSceneCount(Number(e.target.value) || 1)} className="input-field py-2 text-sm" />
-                        <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} className="h-40 w-full resize-none rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all" />
-                        <button onClick={handleConvert} disabled={isConverting || isRefining} className="btn-primary w-full justify-center text-sm py-2.5">
-                          {isConverting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}重新生成
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {leftPanelTab === 'refine' && showRefinePanel && (
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium text-slate-700">AI 指令微调</div>
-                      <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-indigo-700">
-                        试试：<span className="font-medium">"更悬疑一点"</span>、<span className="font-medium">"增强人物冲突"</span>、<span className="font-medium">"对白更口语化"</span>
-                      </div>
-                      <textarea
-                        value={refinePrompt}
-                        onChange={(e) => setRefinePrompt(e.target.value)}
-                        placeholder="例如：保留当前剧情走向，但增加主角与反派的对白冲突..."
-                        className="h-40 w-full resize-none rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 outline-none transition-all"
-                      />
-                      <button onClick={handleRefineWithAi} disabled={isRefining || isConverting} className="btn-accent w-full justify-center text-sm py-2.5">
-                        {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}AI 微调结果
+                      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="标题" className="input-field py-2 text-sm" />
+                      <select value={genre} onChange={(e) => setGenre(e.target.value)} className="input-field py-2 text-sm">
+                        {GENRE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt || '自动识别题材'}</option>)}
+                      </select>
+                      <input type="number" min={1} max={20} value={targetSceneCount} onChange={(e) => setTargetSceneCount(Number(e.target.value) || 1)} className="input-field py-2 text-sm" />
+                      <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} className="h-40 w-full resize-none rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all" />
+                      <button onClick={handleConvert} disabled={isConverting || isRefining} className="btn-primary w-full justify-center text-sm py-2.5">
+                        {isConverting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}重新生成
                       </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+                {leftPanelTab === 'refine' && showRefinePanel && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-slate-700">AI 指令微调</div>
+                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-indigo-700">
+                      试试：<span className="font-medium">"更悬疑一点"</span>、<span className="font-medium">"增强人物冲突"</span>、<span className="font-medium">"对白更口语化"</span>
+                    </div>
+                    <textarea
+                      value={refinePrompt}
+                      onChange={(e) => setRefinePrompt(e.target.value)}
+                      placeholder="例如：保留当前剧情走向，但增加主角与反派的对白冲突..."
+                      className="h-40 w-full resize-none rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 outline-none transition-all"
+                    />
+                    <button onClick={handleRefineWithAi} disabled={isRefining || isConverting} className="btn-accent w-full justify-center text-sm py-2.5">
+                      {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}AI 微调结果
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* YAML Editor */}
-          <div className="card flex flex-col min-h-[760px] overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+          <div className="card flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <FilePenLine className="h-4 w-4 text-amber-500" />
@@ -610,14 +630,16 @@ function Convert() {
                 </button>
               </div>
             </div>
+            <div className="flex-1 p-3 min-h-0">
+              <MonacoEditor value={outputYAML} onChange={(val: string | undefined) => setOutputYAML(val || '')} height="100%" />
             <div className="flex-1 min-h-0 p-3">
               <MonacoEditor value={outputYAML} onChange={handleYamlChange} height="720px" />
             </div>
           </div>
 
           {/* Script Preview */}
-          <div className="card flex flex-col min-h-[760px] overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+          <div className="card flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-indigo-500" />
@@ -628,11 +650,13 @@ function Convert() {
                 )}
               </div>
               <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="全屏">
+                <button onClick={handleFullscreen} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="全屏">
                   <Maximize2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
+            <div className="flex-1 p-3 min-h-0 overflow-hidden">
+              <div className="h-full overflow-y-auto rounded-xl border border-slate-200">
             <div className="flex-1 min-h-0 p-3">
               <div className="h-full overflow-hidden rounded-xl border border-slate-200">
                 <ScriptPreview script={previewScript} />
@@ -641,6 +665,28 @@ function Convert() {
           </div>
         </div>
       </div>
+
+      {/* 全屏预览模态框 */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-white">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-5 w-5 text-indigo-500" />
+              <h2 className="text-lg font-semibold text-slate-900">剧本预览 - 全屏模式</h2>
+            </div>
+            <button
+              onClick={handleFullscreen}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium transition-colors"
+            >
+              <Maximize2 className="h-4 w-4" />
+              退出全屏
+            </button>
+          </div>
+          <div className="h-[calc(100vh-73px)] overflow-y-auto">
+            <ScriptPreview script={previewScript} />
+          </div>
+        </div>
+      )}
     </>
   );
 }
