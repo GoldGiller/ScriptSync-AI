@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type {
   Branch,
   HistoryItem,
@@ -39,6 +38,11 @@ const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
 
 const STORE_SCHEMA_VERSION = 2;
 const DEFAULT_BRANCH_NAME = 'main';
+const LEGACY_STORAGE_KEY = 'script-sync-storage';
+
+if (typeof window !== 'undefined') {
+  window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+}
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -138,8 +142,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>()(
-  persist(
-    (set, get) => ({
+  (set, get) => ({
       schemaVersion: STORE_SCHEMA_VERSION,
       legacyHistoryMigrated: false,
       history: [],
@@ -433,26 +436,5 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           notifications: state.notifications.filter((item) => item.id !== id),
         })),
-    }),
-    {
-      name: 'script-sync-storage',
-      partialize: (state) => ({
-        schemaVersion: state.schemaVersion,
-        legacyHistoryMigrated: state.legacyHistoryMigrated,
-        history: state.history,
-        projects: state.projects,
-        branches: state.branches,
-        versions: state.versions,
-        currentScript: state.currentScript,
-        notifications: state.notifications,
-        activeProjectId: state.activeProjectId,
-        activeBranchId: state.activeBranchId,
-        activeVersionId: state.activeVersionId,
-        compareBaseVersionId: state.compareBaseVersionId,
-      }),
-      onRehydrateStorage: () => (state) => {
-        state?.migrateLegacyHistoryIfNeeded();
-      },
-    }
-  )
+    })
 );
