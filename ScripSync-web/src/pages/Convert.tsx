@@ -535,15 +535,15 @@ function Convert() {
     return (
       <>
         <AiThinkingOverlay title={processTitle} subtitle={processSubtitle} steps={processSteps} visible={isThinkingOverlayVisible} />
-        <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 animate-fade-in">
+        <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 animate-fade-in">
           <div className="max-w-7xl mx-auto px-4 py-10">
             <div className="mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium mb-4">
                 <Sparkles className="h-3.5 w-3.5" />
                 剧本生成
               </div>
-              <h1 className="text-4xl font-extrabold text-slate-900 mb-3">小说转剧本</h1>
-              <p className="text-slate-500 text-lg">填写下方信息，AI 将自动分析并生成结构化剧本 YAML</p>
+              <h1 className="text-4xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">小说转剧本</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-lg">填写下方信息，AI 将自动分析并生成结构化剧本 YAML</p>
             </div>
 
             <div className="grid lg:grid-cols-[1fr_340px] gap-8">
@@ -565,7 +565,7 @@ function Convert() {
                   {isImporting ? (
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="h-10 w-10 text-amber-500 animate-spin" />
-                      <p className="text-slate-600 font-medium">正在解析文档...</p>
+                      <p className="text-slate-600 dark:text-slate-300 font-medium">正在解析文档...</p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
@@ -573,15 +573,15 @@ function Convert() {
                         <Upload className="h-7 w-7 text-amber-600" />
                       </div>
                       <div>
-                        <p className="text-slate-700 font-medium">拖拽文件到此处，或 <span className="text-amber-600">点击选择文件</span></p>
-                        <p className="text-slate-400 text-sm mt-1">支持 .docx / .pdf 格式，导入后自动识别标题与正文</p>
+                        <p className="text-slate-700 dark:text-slate-200 font-medium">拖拽文件到此处，或 <span className="text-amber-600 dark:text-amber-400">点击选择文件</span></p>
+                        <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">支持 .docx / .pdf 格式，导入后自动识别标题与正文</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {importWarnings.length > 0 && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-700 text-sm">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-700 text-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                     <p className="font-medium mb-1">文档已导入，请检查以下提示：</p>
                     <ul className="list-disc pl-5 space-y-1">
                       {importWarnings.map((warning, index) => <li key={`${warning}-${index}`}>{warning}</li>)}
@@ -591,7 +591,7 @@ function Convert() {
 
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">作品标题</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">作品标题</label>
                     <input
                       value={title}
                       onChange={(event) => setTitle(event.target.value)}
@@ -600,7 +600,7 @@ function Convert() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">题材</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">题材</label>
                     <select
                       value={genre}
                       onChange={(event) => setGenre(event.target.value)}
@@ -613,7 +613,7 @@ function Convert() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">目标场景数</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">目标场景数</label>
                     <input
                       type="number"
                       min={1}
@@ -627,14 +627,14 @@ function Convert() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-sm font-medium text-slate-700">小说文本</label>
-                    <span className="text-xs text-slate-400">{inputText.trim().length} 字</span>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">小说文本</label>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{inputText.trim().length} 字</span>
                   </div>
                   <textarea
                     value={inputText}
                     onChange={(event) => setInputText(event.target.value)}
                     placeholder="直接粘贴小说文本，或通过上方区域导入 Word / PDF 文档（至少 20 个字符）..."
-                    className="w-full h-96 p-5 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all resize-none text-sm leading-relaxed placeholder:text-slate-400"
+                    className="w-full h-96 p-5 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded-2xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all resize-none text-sm leading-relaxed placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                 </div>
 
@@ -674,11 +674,11 @@ function Convert() {
 
               <div className="space-y-6">
                 <div className="card p-6 sticky top-24">
-                  <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-4">
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
                     <Sparkles className="h-4 w-4 text-amber-500" />
                     写作建议
                   </h3>
-                  <ul className="space-y-3 text-sm text-slate-600">
+                  <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     <li>文本越长，AI 对人物关系和情节的理解通常越准确。</li>
                     <li>明确题材可以帮助 AI 更稳定地控制风格和节奏。</li>
                     <li>建议场景数先控制在 3 到 8 个，便于演示结构变化。</li>
@@ -688,26 +688,26 @@ function Convert() {
                 </div>
 
                 <div className="card p-6 sticky top-[380px]">
-                  <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-4">
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
                     <Hash className="h-4 w-4 text-indigo-500" />
                     文本统计
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">总字数</span>
-                      <span className="font-semibold text-slate-900">{inputText.length.toLocaleString()}</span>
+                      <span className="text-slate-500 dark:text-slate-400">总字数</span>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">{inputText.length.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">有效字符</span>
-                      <span className="font-semibold text-slate-900">{inputText.trim().length.toLocaleString()}</span>
+                      <span className="text-slate-500 dark:text-slate-400">有效字符</span>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">{inputText.trim().length.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">目标场景</span>
-                      <span className="font-semibold text-slate-900">{targetSceneCount}</span>
+                      <span className="text-slate-500 dark:text-slate-400">目标场景</span>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">{targetSceneCount}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">当前模式</span>
-                      <span className="font-semibold text-slate-900">{workspaceMode === 'standard' ? '普通模式' : '对比模式'}</span>
+                      <span className="text-slate-500 dark:text-slate-400">当前模式</span>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">{workspaceMode === 'standard' ? '普通模式' : '对比模式'}</span>
                     </div>
                   </div>
                 </div>
@@ -722,7 +722,7 @@ function Convert() {
   return (
     <>
       <AiThinkingOverlay title={processTitle} subtitle={processSubtitle} steps={processSteps} visible={isThinkingOverlayVisible} />
-      <div className="h-screen bg-slate-50 animate-fade-in flex flex-col">
+      <div className="h-screen bg-slate-50 dark:bg-slate-950 animate-fade-in flex flex-col">
         <div className="glass border-b border-slate-200/60 flex-shrink-0">
           <div className="max-w-[1680px] mx-auto px-4 py-2.5 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
@@ -737,22 +737,22 @@ function Convert() {
                 <div className="flex items-center gap-2">
                   <span className="badge-amber"><Sparkles className="h-3 w-3" />AI 工作台</span>
                   <span className="text-sm text-slate-400 hidden sm:inline">·</span>
-                  <span className="text-sm text-slate-600 truncate hidden sm:inline">{derivedTitle}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-300 truncate hidden sm:inline">{derivedTitle}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1">
+              <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
                 <button
                   onClick={() => setWorkspaceMode('standard')}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${workspaceMode === 'standard' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${workspaceMode === 'standard' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   普通模式
                 </button>
                 <button
                   onClick={() => setWorkspaceMode('compare')}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${workspaceMode === 'compare' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${workspaceMode === 'compare' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500 dark:text-slate-400'}`}
                 >
                   对比模式
                 </button>
@@ -760,10 +760,10 @@ function Convert() {
               <button onClick={resetWorkspace} className="btn-ghost text-sm">
                 <FilePenLine className="h-4 w-4" />重新转换
               </button>
-              <button onClick={handleValidate} disabled={isValidating} className="btn-ghost text-sm text-indigo-600 hover:bg-indigo-50">
+              <button onClick={handleValidate} disabled={isValidating} className="btn-ghost text-sm text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-500/10">
                 {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}校验
               </button>
-              <button onClick={handleFormat} disabled={isFormatting} className="btn-ghost text-sm text-emerald-600 hover:bg-emerald-50">
+              <button onClick={handleFormat} disabled={isFormatting} className="btn-ghost text-sm text-emerald-600 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10">
                 {isFormatting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}格式化
               </button>
               <button onClick={handleDownload} className="btn-primary text-sm py-2">
@@ -815,7 +815,7 @@ function Convert() {
                         key={tab.key}
                         onClick={() => setLeftPanelTab(tab.key)}
                         className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-medium transition-all ${
-                          active ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700'
+                        active ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -832,7 +832,7 @@ function Convert() {
 
                   {leftPanelTab === 'input' && showRefinePanel && (
                     <div className="space-y-3">
-                      <div className="text-sm font-medium text-slate-700">修改输入参数</div>
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">修改输入参数</div>
                       <div className="space-y-3">
                         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="标题" className="input-field py-2 text-sm" />
                         <select value={genre} onChange={(event) => setGenre(event.target.value)} className="input-field py-2 text-sm">
@@ -849,8 +849,8 @@ function Convert() {
 
                   {leftPanelTab === 'refine' && showRefinePanel && (
                     <div className="space-y-3">
-                      <div className="text-sm font-medium text-slate-700">AI 指令微调</div>
-                      <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-indigo-700">
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">AI 指令微调</div>
+                      <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                         试试：“更悬疑一点”、“加强人物冲突”、“对白更口语化”
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -859,8 +859,8 @@ function Convert() {
                           onClick={() => setRefineCommitMode('overwrite')}
                           className={`rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
                             refineCommitMode === 'overwrite'
-                              ? 'border-amber-300 bg-amber-50 text-amber-700'
-                              : 'border-slate-200 text-slate-500'
+                              ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300'
+                              : 'border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400'
                           }`}
                         >
                           <Replace className="inline h-3.5 w-3.5 mr-1" />
@@ -871,8 +871,8 @@ function Convert() {
                           onClick={() => setRefineCommitMode('branch')}
                           className={`rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
                             refineCommitMode === 'branch'
-                              ? 'border-amber-300 bg-amber-50 text-amber-700'
-                              : 'border-slate-200 text-slate-500'
+                              ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300'
+                              : 'border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400'
                           }`}
                         >
                           <GitBranchPlus className="inline h-3.5 w-3.5 mr-1" />
@@ -895,12 +895,12 @@ function Convert() {
             )}
 
             <div className="card flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50">
-                <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/50">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <FilePenLine className="h-4 w-4 text-amber-500" />
                   YAML 编辑器
                 </h2>
-                <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="搜索">
+                <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800" title="搜索">
                   <Search className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -917,22 +917,22 @@ function Convert() {
             </div>
 
             <div className="card flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/50">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-indigo-500" />
                     剧本预览
                   </h2>
                   {isPreviewStale && (
-                    <p className="mt-1 text-xs text-amber-600">当前预览未同步最新 YAML，请重新校验。</p>
+                    <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">当前预览未同步最新 YAML，请重新校验。</p>
                   )}
                 </div>
-                <button onClick={() => setIsFullscreen(true)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="全屏">
+                <button onClick={() => setIsFullscreen(true)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800" title="全屏">
                   <Maximize2 className="h-3.5 w-3.5" />
                 </button>
               </div>
               <div className="flex-1 min-h-0 p-3">
-                <div className="h-full overflow-hidden rounded-xl border border-slate-200">
+                <div className="h-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                   <ScriptPreview
                     script={previewScript}
                     activeNodePath={activeYamlPath}
@@ -950,16 +950,16 @@ function Convert() {
               onSelectScene={setSelectedCompareSceneId}
             />
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 overflow-y-auto">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 overflow-y-auto dark:border-slate-700 dark:bg-slate-900">
               <div className="mb-4 flex items-center gap-2">
                 <Columns3Cog className="h-4 w-4 text-amber-500" />
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">原始小说片段</h3>
-                  <p className="text-xs text-slate-500">当前版本为前端近似映射，后续可替换成后端场景对齐结果。</p>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">原始小说片段</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">当前版本为前端近似映射，后续可替换成后端场景对齐结果。</p>
                 </div>
               </div>
-              <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/60 p-4">
-                <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">
+              <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                   {selectedCompareSceneId ? sourceExcerptMap[selectedCompareSceneId] || '当前场景暂无可用原文片段' : '请先选择一个场景'}
                 </p>
               </div>
@@ -983,15 +983,15 @@ function Convert() {
       </div>
 
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-white">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <div className="fixed inset-0 z-50 bg-white dark:bg-slate-950">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center gap-3">
               <BookOpen className="h-5 w-5 text-indigo-500" />
-              <h2 className="text-lg font-semibold text-slate-900">剧本预览 - 全屏模式</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">剧本预览 - 全屏模式</h2>
             </div>
             <button
               onClick={() => setIsFullscreen(false)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium transition-colors dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
             >
               <Maximize2 className="h-4 w-4" />
               退出全屏

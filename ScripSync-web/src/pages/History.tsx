@@ -250,12 +250,12 @@ function History() {
 
           <div className="grid xl:grid-cols-[280px_minmax(0,1fr)] gap-4 mb-4">
             <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-slate-900">项目概览</h3>
-                  <p className="mt-1 text-xs text-slate-500">按项目、分支、版本浏览当前的剧本演化历史。</p>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">项目概览</h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">按项目、分支、版本浏览当前的剧本演化历史。</p>
                 </div>
-                <div className="space-y-2 text-sm text-slate-600">
+                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1"><GitBranch className="h-4 w-4" />分支数</span>
                     <span>{selectedProjectBranches.length}</span>
@@ -273,10 +273,10 @@ function History() {
                 onSwitch={switchBranch}
               />
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-slate-900">版本列表</h3>
-                  <p className="mt-1 text-xs text-slate-500">点击版本可恢复对应的 YAML 和预览内容。</p>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">版本列表</h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">点击版本可恢复对应的 YAML 和预览内容。</p>
                 </div>
                 <div className="space-y-2">
                   {branchVersions.map((version) => {
@@ -288,15 +288,15 @@ function History() {
                         onClick={() => switchVersion(version.id)}
                         className={`w-full rounded-xl border px-3 py-3 text-left transition-all ${
                           active
-                            ? 'border-amber-300 bg-amber-50'
-                            : 'border-slate-200 hover:border-amber-200 hover:bg-slate-50'
+                            ? 'border-amber-300 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-500/10'
+                            : 'border-slate-200 hover:border-amber-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-amber-500/30 dark:hover:bg-slate-800'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-medium text-slate-900">{version.title}</span>
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">{version.source}</span>
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{version.title}</span>
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">{version.source}</span>
                         </div>
-                        <p className="mt-1 text-xs text-slate-500">{version.createdAt.replace('T', ' ').slice(0, 16)}</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{version.createdAt.replace('T', ' ').slice(0, 16)}</p>
                       </button>
                     );
                   })}
