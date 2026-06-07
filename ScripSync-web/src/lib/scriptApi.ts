@@ -18,7 +18,7 @@ interface ApiResponse<T> {
 
 export function buildGenerateProcessSteps(payload: ScriptGenerateRequest): ProcessStep[] {
   return [
-    { key: 'read-input', label: '读取输入内容', status: 'completed', detail: '已读取标题、题材、正文与目标场景数。' },
+    { key: 'read-input', label: '读取输入内容', status: 'completed', detail: '已读取标题、题材、正文和目标场景数。' },
     { key: 'analyze-story', label: '分析人物关系', status: 'active', detail: '正在分析人物关系、冲突焦点与情绪走向。' },
     { key: 'infer-genre', label: '推断题材与节奏', status: 'pending', detail: `准备结合题材“${payload.genre || '未指定'}”推断表达风格与节奏。` },
     { key: 'generate-yaml', label: '生成剧本 YAML', status: 'pending', detail: '等待 AI 产出结构化剧本 YAML。' },
@@ -29,7 +29,7 @@ export function buildGenerateProcessSteps(payload: ScriptGenerateRequest): Proce
 
 export function buildRefineProcessSteps(refinePrompt: string): ProcessStep[] {
   return [
-    { key: 'load-current', label: '读取当前结果', status: 'completed', detail: '已读取当前 YAML 与已有剧本结构。' },
+    { key: 'load-current', label: '读取当前结果', status: 'completed', detail: '已读取当前 YAML 与现有剧本结构。' },
     { key: 'analyze-intent', label: '分析微调目标', status: 'active', detail: `正在理解微调要求：${refinePrompt}` },
     { key: 'plan-rewrite', label: '规划调整方案', status: 'pending', detail: '准备推断需要强化的情绪、冲突与节奏。' },
     { key: 'call-ai', label: '执行 AI 微调', status: 'pending', detail: '等待 AI 生成新的剧本 YAML。' },
@@ -73,8 +73,8 @@ export function buildExampleScript(): ScriptDocument {
     genre: '都市',
     premise: '一段用于演示前后端联调的剧本简介。',
     characters: [
-      { name: '林夏', role: '主角', summary: '追查匿名来信背后真相的年轻女性。' },
-      { name: '旁白', role: '叙事者', summary: '负责补充环境与心理活动。' },
+      { name: '林夏', role: '主角', summary: '追查匿名来信背后真相的年轻女性。', character_name: '林夏' },
+      { name: '旁白', role: '叙事者', summary: '负责补充环境与心理活动。', character_name: '旁白' },
     ],
     scenes: [
       {
@@ -84,8 +84,8 @@ export function buildExampleScript(): ScriptDocument {
         time: '夜',
         summary: '林夏在雨夜收到匿名来信，决定动身前往旧戏院。',
         dialogues: [
-          { speaker: '旁白', content: '雨点砸在窗沿，信封上的字迹被路灯照得发白。', emotion: '紧张' },
-          { speaker: '林夏', content: '如果这真和姐姐有关，我必须去。', emotion: '坚定' },
+          { speaker: '旁白', content: '雨点敲在窗沿，信封上的字迹被路灯照得发白。', emotion: '紧张', dialogue_index: 0 },
+          { speaker: '林夏', content: '如果这真和姐姐有关，我必须去。', emotion: '坚定', dialogue_index: 1 },
         ],
       },
     ],
