@@ -33,7 +33,9 @@ function MessageCenter({
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
         <div>
           <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">消息中心</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{unreadCount > 0 ? `${unreadCount} 条未读消息` : '暂无未读消息'}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {unreadCount > 0 ? `${unreadCount} 条未读消息` : '暂无未读消息'}
+          </p>
         </div>
         <button
           onClick={onMarkAllAsRead}
@@ -51,7 +53,9 @@ function MessageCenter({
             <Inbox className="h-6 w-6 text-slate-400 dark:text-slate-500" />
           </div>
           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">暂无消息</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">新的系统提醒会显示在这里。</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            新的系统提醒会显示在这里。
+          </p>
         </div>
       ) : (
         <div className="max-h-[24rem] overflow-y-auto p-2">
@@ -86,7 +90,7 @@ function MessageCenter({
                 </div>
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="opacity-0 transition-opacity text-slate-400 hover:text-rose-500 group-hover:opacity-100 dark:text-slate-500 dark:hover:text-rose-400"
+                  className="opacity-0 text-slate-400 transition-opacity hover:text-rose-500 group-hover:opacity-100 dark:text-slate-500 dark:hover:text-rose-400"
                   title="删除消息"
                 >
                   <Trash2 className="h-4 w-4" />
